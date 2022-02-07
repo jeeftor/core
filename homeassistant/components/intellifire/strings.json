@@ -2,13 +2,17 @@
   "config": {
     "step": {
       "user": {
-        "data": {
-          "host": "[%key:common::config_flow::data::host%]"
+        "title": "IntelliFire Config",
+          "description": "Username and password are the same information used in your IntelliFire Android/iOS application.",        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
         }
       }
     },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "api_error": "[%key:common::config_flow::error::api_error%]"
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"

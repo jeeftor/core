@@ -4,13 +4,17 @@
             "already_configured": "Device is already configured"
         },
         "error": {
-            "cannot_connect": "Failed to connect",
+            "cannot_connect": "Failed to connect to to fireplace IP on the local network.",
+            "api_error": "IFTAPI Login Error - check Username/Password.",
             "unknown": "Unexpected error"
         },
         "step": {
             "user": {
+                "description": "Username and password are the same information used in your IntelliFire Android/iOS application.",
                 "data": {
-                    "host": "Host"
+                    "host": "Host",
+                    "username": "Username (email)",
+                    "password": "Password"
                 }
             }
         }

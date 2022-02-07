@@ -913,6 +913,8 @@ tests/components/subaru/* @G-Two
 homeassistant/components/suez_water/* @ooii
 homeassistant/components/sun/* @Swamp-Ig
 tests/components/sun/* @Swamp-Ig
+homeassistant/components/sunpower/* @krbaker
+tests/components/sunpower/* @krbaker
 homeassistant/components/supla/* @mwegrzynek
 homeassistant/components/surepetcare/* @benleb @danielhiversen
 tests/components/surepetcare/* @benleb @danielhiversen
