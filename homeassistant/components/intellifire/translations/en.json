@@ -4,18 +4,21 @@
             "already_configured": "Device is already configured"
         },
         "error": {
-            "cannot_connect": "Failed to connect to to fireplace IP on the local network.",
-            "api_error": "IFTAPI Login Error - check Username/Password.",
-            "unknown": "Unexpected error"
+            "cannot_connect": "Failed to connect to intellifire on local network - check host and try agian.",
+            "api_error": "API Error",
+            "iftapi_connect": "iftapi connect error"
         },
         "step": {
             "user": {
-                "description": "Username and password are the same information used in your IntelliFire Android/iOS application.",
                 "data": {
                     "host": "Host",
+                    "password": "Password",
                     "username": "Username (email)",
-                    "password": "Password"
-                }
+                    "ssl": "Uncheck to enable HTTP communications with IFTAPI. In some cases such as SSL Inspection or perhaps behind a corporate proxy you may need to do this.",
+                    "verify_ssl": "Uncheck to disable client certificate verification SSL (https) mode"
+                },
+                "description": "Username and password are the same information used in your IntelliFire Android/iOS application.",
+                "title": "IntelliFire Config"
             }
         }
     }

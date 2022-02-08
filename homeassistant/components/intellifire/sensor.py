@@ -17,47 +17,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util.dt import utcnow
 
 from . import IntellifireDataUpdateCoordinator
 from .const import DOMAIN
-
-
-class IntellifireSensor(CoordinatorEntity, SensorEntity):
-    """Define a generic class for Sensors."""
-
-    # Define types
-    coordinator: IntellifireDataUpdateCoordinator
-    entity_description: IntellifireSensorEntityDescription
-    _attr_attribution = "Data provided by unpublished Intellifire API"
-
-    def __init__(
-        self,
-        coordinator: IntellifireDataUpdateCoordinator,
-        description: IntellifireSensorEntityDescription,
-    ) -> None:
-        """Init the sensor."""
-        super().__init__(coordinator=coordinator)
-        self.entity_description = description
-
-        # Set the Display name the User will see
-        self._attr_name = f"Fireplace {description.name}"
-        self._attr_unique_id = f"{description.key}_{coordinator.api.data.serial}"
-        # Configure the Device Info
-        self._attr_device_info = self.coordinator.device_info
-
-    @property
-    def native_value(self) -> int | str | datetime | None:
-        """Return the state."""
-        return self.entity_description.value_fn(self.coordinator.api.data)
-
-
-def _time_remaining_to_timestamp(data: IntellifirePollData) -> datetime | None:
-    """Define a sensor that takes into account timezone."""
-    if not (seconds_offset := data.timeremaining_s):
-        return None
-    return utcnow() + timedelta(seconds=seconds_offset)
+from .entity import IntellifireEntity
+from ...helpers.entity import EntityCategory
 
 
 @dataclass
@@ -69,21 +34,17 @@ class IntellifireSensorRequiredKeysMixin:
 
 @dataclass
 class IntellifireSensorEntityDescription(
-    SensorEntityDescription, IntellifireSensorRequiredKeysMixin
+    SensorEntityDescription,
+    IntellifireSensorRequiredKeysMixin,
 ):
-    """Describes a sensor sensor entity."""
+    """Describes a sensor entity."""
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
-) -> None:
-    """Define setup entry call."""
-
-    coordinator: IntellifireDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        IntellifireSensor(coordinator=coordinator, description=description)
-        for description in INTELLIFIRE_SENSORS
-    )
+def _time_remaining_to_timestamp(data: IntellifirePollData) -> datetime | None:
+    """Define a sensor that takes into account timezone."""
+    if not (seconds_offset := data.timeremaining_s):
+        return None
+    return utcnow() + timedelta(seconds=seconds_offset)
 
 
 INTELLIFIRE_SENSORS: tuple[IntellifireSensorEntityDescription, ...] = (
@@ -125,4 +86,63 @@ INTELLIFIRE_SENSORS: tuple[IntellifireSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=_time_remaining_to_timestamp,
     ),
+    IntellifireSensorEntityDescription(
+        key="downtime",
+        name="Downtime",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.downtime,
+    ),
+    IntellifireSensorEntityDescription(
+        key="uowntime",
+        name="Uptime",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.uptime,
+    ),
+    IntellifireSensorEntityDescription(
+        key="connection_quality",
+        name="Connection Quality",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.connection_quality,
+    ),
+    IntellifireSensorEntityDescription(
+        key="ecm_latency",
+        name="ECM Latency",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.ecm_latency,
+    ),
+    IntellifireSensorEntityDescription(
+        key="ipv4_address",
+        name="IP",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.ipv4_address,
+    ),
+    IntellifireSensorEntityDescription(
+        key="serial",
+        name="Serial",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: data.serial,
+    ),
 )
+
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
+    """Define setup entry call."""
+
+    coordinator: IntellifireDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    async_add_entities(
+        IntellifireSensor(coordinator=coordinator, description=description)
+        for description in INTELLIFIRE_SENSORS
+    )
+
+
+class IntellifireSensor(IntellifireEntity, SensorEntity):
+    """Extends IntellifireEntity with Sensor specific logic."""
+
+    entity_description: IntellifireSensorEntityDescription
+
+    @property
+    def native_value(self) -> int | str | datetime | None:
+        """Return the state."""
+        return self.entity_description.value_fn(self.coordinator.api.data)
