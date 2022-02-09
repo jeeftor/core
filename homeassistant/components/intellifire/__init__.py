@@ -6,9 +6,9 @@ from intellifire4py import IntellifireAsync, IntellifireControlAsync
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
-    CONF_USERNAME,
     CONF_PASSWORD,
     CONF_SSL,
+    CONF_USERNAME,
     CONF_VERIFY_SSL,
     Platform,
 )
@@ -23,7 +23,7 @@ PLATFORMS = [
     Platform.SWITCH,
     Platform.FAN,
     Platform.CLIMATE,
-    Platform.BUTTON
+    Platform.BUTTON,
 ]
 
 
@@ -44,7 +44,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             username=entry.data[CONF_USERNAME],
             password=entry.data[CONF_PASSWORD],
         )
-        username = await ift_control.get_username()
     finally:
         await ift_control.close()
 

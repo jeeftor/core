@@ -36,6 +36,7 @@ INTELLIFIRE_FANS: tuple[IntellifireFanEntityDescription, ...] = (
     ),
 )
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -61,11 +62,12 @@ class IntellifireFan(IntellifireEntity, FanEntity):
 
     @property
     def is_on(self):
+        """Return on or off."""
         return self.coordinator.api.data.fanspeed >= 1
-
 
     @property
     def percentage(self) -> int | None:
+        """Return fan percentage."""
         return self.coordinator.api.data.fanspeed * 25
 
     @property
@@ -122,4 +124,3 @@ class IntellifireFan(IntellifireEntity, FanEntity):
         # Update HA while we wait for poll to actually re-pull the state info
         self.coordinator.api.data.fanspeed = 0
         await self.async_update_ha_state()
-

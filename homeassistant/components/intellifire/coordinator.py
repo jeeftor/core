@@ -7,8 +7,8 @@ from aiohttp import ClientConnectionError
 from async_timeout import timeout
 from intellifire4py import (
     IntellifireAsync,
-    IntellifirePollData,
     IntellifireControlAsync,
+    IntellifirePollData,
 )
 
 from homeassistant.core import HomeAssistant

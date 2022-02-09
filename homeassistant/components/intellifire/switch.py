@@ -23,6 +23,7 @@ class IntellifireSwitchRequiredKeysMixin:
     on_fn: Callable[[IntellifireControlAsync], None]
     off_fn: Callable[[IntellifireControlAsync], None]
     value_fn: Callable[[IntellifirePollData], bool]
+    data_field: str
 
 
 @dataclass
@@ -43,6 +44,7 @@ INTELLIFIRE_SWITCHES: tuple[IntellifireSwitchEntityDescription, ...] = (
             fireplace=control_api.default_fireplace
         ),
         value_fn=lambda data: data.is_on,
+        data_field="is_on",
     ),
     IntellifireSwitchEntityDescription(
         key="pilot",
@@ -55,6 +57,7 @@ INTELLIFIRE_SWITCHES: tuple[IntellifireSwitchEntityDescription, ...] = (
             fireplace=control_api.default_fireplace
         ),
         value_fn=lambda data: data.pilot_on,
+        data_field="pilot_on",
     ),
 )
 
@@ -81,19 +84,20 @@ class IntellifireSwitch(IntellifireEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the switch."""
         await self.entity_description.on_fn(self.coordinator.control_api)  # type: ignore
-
+        setattr(self.coordinator.api.data, self.entity_description.data_field, 1)
+        await self.async_update_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the switch."""
         await self.entity_description.on_fn(self.coordinator.control_api)  # type: ignore
+        setattr(self.coordinator.api.data, self.entity_description.data_field, 0)
+        await self.async_update_ha_state()
 
     @property
     def is_on(self) -> bool | None:
         """Return the on state."""
-        LOGGER.info(f"is on: {self.coordinator.api.data.is_on}")
         return self.entity_description.value_fn(self.coordinator.api.data)
 
     async def async_update(self) -> None:
-        """Tell coordinator to update"""
+        """Tell coordinator to update."""
         await self.coordinator.api.poll()
-

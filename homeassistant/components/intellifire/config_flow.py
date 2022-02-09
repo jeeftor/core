@@ -1,29 +1,27 @@
 """Config flow for IntelliFire integration."""
 from __future__ import annotations
 
+# FOR TESTING ONLY REMOVE FROM PRODUCTION
+import os
 from typing import Any
 
 from aiohttp import ClientConnectionError
-from intellifire4py import IntellifireAsync
-from intellifire4py import IntellifireControlAsync
-import voluptuous as vol
+from intellifire4py import IntellifireAsync, IntellifireControlAsync
 from intellifire4py.control import LoginException
+import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
     CONF_PASSWORD,
-    CONF_USERNAME,
     CONF_SSL,
+    CONF_USERNAME,
     CONF_VERIFY_SSL,
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN
-
-# FOR TESTING ONLY REMOVE FROM PRODUCTION
-import os
 
 h = os.getenv("IFT_HOST")
 u = os.getenv("IFT_USER")

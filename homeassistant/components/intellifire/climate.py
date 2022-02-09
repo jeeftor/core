@@ -41,13 +41,13 @@ async def async_setup_entry(
     coordinator: IntellifireDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities(
-        IntellifireClimate(coordinator=coordinator,
-                           description=description,
-                           # entity_registry_enabled_default=bool(coordinator.api.data.has_thermostat)
-                           )
+        IntellifireClimate(
+            coordinator=coordinator,
+            description=description,
+            # entity_registry_enabled_default=bool(coordinator.api.data.has_thermostat)
+        )
         for description in INTELLIFIRE_CLIMATES
     )
-
 
 
 class IntellifireClimate(IntellifireEntity, ClimateEntity):
@@ -63,11 +63,6 @@ class IntellifireClimate(IntellifireEntity, ClimateEntity):
     _attr_target_temperature_step = 1.0
     _attr_temperature_unit = TEMP_CELSIUS
     last_temp = 21
-
-    @property
-    def current_temperature(self) -> float | None:
-        """Return current temperature."""
-        return self.coordinator.api.data.temperature_c
 
     @property
     def hvac_mode(self) -> str:
@@ -95,6 +90,7 @@ class IntellifireClimate(IntellifireEntity, ClimateEntity):
 
     @property
     def target_temperature(self) -> float | None:
+        """Return target temperature."""
         return float(self.coordinator.api.data.thermostat_setpoint_c)
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:

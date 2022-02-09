@@ -20,9 +20,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.dt import utcnow
 
 from . import IntellifireDataUpdateCoordinator
+from ...helpers.entity import EntityCategory
 from .const import DOMAIN
 from .entity import IntellifireEntity
-from ...helpers.entity import EntityCategory
 
 
 @dataclass
@@ -129,7 +129,6 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Define setup entry call."""
-
     coordinator: IntellifireDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
         IntellifireSensor(coordinator=coordinator, description=description)
@@ -139,7 +138,6 @@ async def async_setup_entry(
 
 class IntellifireSensor(IntellifireEntity, SensorEntity):
     """Extends IntellifireEntity with Sensor specific logic."""
-
     entity_description: IntellifireSensorEntityDescription
 
     @property
