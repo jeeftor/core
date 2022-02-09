@@ -18,11 +18,12 @@ from .const import DOMAIN, LOGGER
 from .coordinator import IntellifireDataUpdateCoordinator
 
 PLATFORMS = [
-    # Platform.BINARY_SENSOR,
-    # Platform.SENSOR,
-    # Platform.SWITCH,
-    # Platform.FAN,
-    Platform.CLIMATE
+    Platform.BINARY_SENSOR,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.FAN,
+    Platform.CLIMATE,
+    Platform.BUTTON
 ]
 
 

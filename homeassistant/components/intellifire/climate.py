@@ -40,11 +40,14 @@ async def async_setup_entry(
     """Set up the fans."""
     coordinator: IntellifireDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    if coordinator.api.data.has_fan:
-        async_add_entities(
-            IntellifireClimate(coordinator=coordinator, description=description)
-            for description in INTELLIFIRE_CLIMATES
-        )
+    async_add_entities(
+        IntellifireClimate(coordinator=coordinator,
+                           description=description,
+                           # entity_registry_enabled_default=bool(coordinator.api.data.has_thermostat)
+                           )
+        for description in INTELLIFIRE_CLIMATES
+    )
+
 
 
 class IntellifireClimate(IntellifireEntity, ClimateEntity):
@@ -85,12 +88,26 @@ class IntellifireClimate(IntellifireEntity, ClimateEntity):
             temp_c=self.last_temp,
         )
 
+    @property
+    def current_temperature(self) -> float:
+        """Return the current temperature."""
+        return float(self.coordinator.api.data.temperature_c)
+
+    @property
+    def target_temperature(self) -> float | None:
+        return float(self.coordinator.api.data.thermostat_setpoint_c)
+
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         """Set HVAC mode to normal or thermostat control."""
         LOGGER.info(f"Setting mode to[{hvac_mode} - using last temp: {self.last_temp}")
 
         # Is there a way to use a := here?
         if hvac_mode == HVAC_MODE_HEAT:
+            # 1) Make sure the fireplace is on!
+            await self.coordinator.control_api.flame_on(
+                fireplace=self.coordinator.control_api.default_fireplace,
+            )
+            # 2) Set the desired target temp
             await self.coordinator.control_api.set_thermostat_c(
                 fireplace=self.coordinator.control_api.default_fireplace,
                 temp_c=self.last_temp,

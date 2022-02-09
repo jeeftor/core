@@ -60,6 +60,15 @@ class IntellifireFan(IntellifireEntity, FanEntity):
     entity_description: IntellifireFanEntityDescription
 
     @property
+    def is_on(self):
+        return self.coordinator.api.data.fanspeed >= 1
+
+
+    @property
+    def percentage(self) -> int | None:
+        return self.coordinator.api.data.fanspeed * 25
+
+    @property
     def supported_features(self) -> int:
         """Flag supported features."""
         return SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
@@ -67,7 +76,7 @@ class IntellifireFan(IntellifireEntity, FanEntity):
     @property
     def speed_count(self) -> int:
         """Count of supported speeds."""
-        return 5  # Off and 4 speeds
+        return 4  # Off and 4 speeds - don't count off?
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the fan."""
@@ -83,8 +92,11 @@ class IntellifireFan(IntellifireEntity, FanEntity):
         await self.coordinator.control_api.set_fan_speed(
             fireplace=self.coordinator.control_api.default_fireplace, speed=int_value
         )
+        # Update HA while we wait for the data to be re-polled
+        self.coordinator.api.data.fanspeed = int_value
+        await self.async_update_ha_state()
         LOGGER.info(
-            f"Fan speed {int_value} [{int_value * 25}%] = FAN_MODE: [{percentage_to_ordered_list_item(NAMED_FAN_SPEEDS, int_value)}]"
+            f"Fan speed {int_value} [{int_value * 25}%] = FAN_MODE: [{percentage_to_ordered_list_item(NAMED_FAN_SPEEDS, int_value * 25)}] "
         )
 
     async def async_turn_on(
@@ -98,9 +110,16 @@ class IntellifireFan(IntellifireEntity, FanEntity):
         await self.coordinator.control_api.set_fan_speed(
             fireplace=self.coordinator.control_api.default_fireplace, speed=1
         )
+        # Update HA while we wait for poll to actually re-pull the state info
+        self.coordinator.api.data.fanspeed = 1
+        await self.async_update_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the fan."""
         await self.coordinator.control_api.fan_off(
             fireplace=self.coordinator.control_api.default_fireplace
         )
+        # Update HA while we wait for poll to actually re-pull the state info
+        self.coordinator.api.data.fanspeed = 0
+        await self.async_update_ha_state()
+
