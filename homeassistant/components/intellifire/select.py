@@ -48,6 +48,30 @@ INTELLIFIRE_SELECTS: tuple[IntellifireSelectEntityDescription, ...] = (
         ),
         select_field_name="flameheight",
     ),
+    IntellifireSelectEntityDescription(
+        key="fan",
+        name="Fan Speed",
+        icon="mdi:fan",
+        value_fn=lambda data: data.fanspeed,
+        internal_options=[0, 1, 2, 3, 4],
+        external_options=["Off", "Quiet", "Low", "Medium", "High"],
+        select_fn=lambda control_api, speed: control_api.set_fan_speed(
+            fireplace=control_api.default_fireplace, speed=speed
+        ),
+        select_field_name="fanspeed",
+    ),
+    IntellifireSelectEntityDescription(
+        key="light_level",
+        name="Light Level",
+        icon="mdi:floor-lamp-torchiere-variant",
+        value_fn=lambda data: data.light_level,
+        internal_options=[0, 1, 2, 3, 4],
+        external_options=["Off", "Low", "Medium", "High"],
+        select_fn=lambda control_api, level: control_api.set_lights(
+            fireplace=control_api.default_fireplace, level=level
+        ),
+        select_field_name="light_level",
+    ),
 )
 
 

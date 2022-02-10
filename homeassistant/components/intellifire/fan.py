@@ -57,18 +57,7 @@ INTELLIFIRE_FANS: tuple[IntellifireFanEntityDescription, ...] = (
             "low",
             "medium",
             "high",
-        ],  # off is not included  # off is not included
-    ),
-    IntellifireFanEntityDescription(
-        key="flame",
-        name="Flame Height",
-        set_fn=lambda control_api, height: control_api.set_flame_height(
-            fireplace=control_api.default_fireplace, height=height
-        ),
-        icon="mdi:campfire",
-        value_fn=lambda data: data.flameheight,
-        data_field="flameheight",
-        named_speeds=["0", "1", "2", "3", "4"],  # off is not included
+        ],  # off is not included
     ),
 )
 
@@ -86,9 +75,6 @@ async def async_setup_entry(
             IntellifireFan(coordinator=coordinator, description=description)
             for description in INTELLIFIRE_FANS
         )
-
-
-# NAMED_FAN_SPEEDS = ["quiet", "low", "medium", "high"]  # off is not included
 
 
 class IntellifireFan(IntellifireEntity, FanEntity):
@@ -161,9 +147,9 @@ class IntellifireFan(IntellifireEntity, FanEntity):
         setattr(self.coordinator.api, self.entity_description.data_field, 0)
         await self.async_update_ha_state()
 
-        # await self.coordinator.control_api.fan_off(
-        #     fireplace=self.coordinator.control_api.default_fireplace
-        # )
-        # Update HA while we wait for poll to actually re-pull the state info
-        # self.coordinator.api.data.fanspeed = 0
-        # await self.async_update_ha_state()
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Enable entity if configured with a thermostat."""
+        # Should this be moved into a lambda function in the fan description?
+        # If so we can wait for the PR process
+        return bool(self.coordinator.data.has_fan)

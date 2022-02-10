@@ -28,7 +28,7 @@ class IntellifireClimateEntityDescription(ClimateEntityDescription):
 
 
 INTELLIFIRE_CLIMATES: tuple[IntellifireClimateEntityDescription, ...] = (
-    IntellifireClimateEntityDescription(key="climate", name="Thermostat"),
+    IntellifireClimateEntityDescription(key="climate", name="climate"),
 )
 
 
@@ -44,7 +44,6 @@ async def async_setup_entry(
         IntellifireClimate(
             coordinator=coordinator,
             description=description,
-            # entity_registry_enabled_default=bool(coordinator.api.data.has_thermostat)
         )
         for description in INTELLIFIRE_CLIMATES
     )
@@ -63,6 +62,18 @@ class IntellifireClimate(IntellifireEntity, ClimateEntity):
     _attr_target_temperature_step = 1.0
     _attr_temperature_unit = TEMP_CELSIUS
     last_temp = 21
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Enable entity if configured with a thermostat."""
+        enabled = bool(self.coordinator.data.has_thermostat)
+        # Can i use a walrus operator here?
+        if not enabled:
+            LOGGER.info(
+                "Disabling climate sensor - intellifire device does not appear to have one"
+            )
+            return False
+        return True
 
     @property
     def hvac_mode(self) -> str:
