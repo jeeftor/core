@@ -6,8 +6,8 @@ from typing import Any, Awaitable, Callable
 
 from intellifire4py import IntellifireControlAsync, IntellifirePollData
 
-from homeassistant.components.intellifire import IntellifireDataUpdateCoordinator
-from homeassistant.components.intellifire.entity import IntellifireEntity
+from .coordinator import IntellifireDataUpdateCoordinator
+from .entity import IntellifireEntity
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant

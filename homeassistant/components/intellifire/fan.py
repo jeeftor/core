@@ -13,8 +13,8 @@ from homeassistant.components.fan import (
     FanEntity,
     FanEntityDescription,
 )
-from homeassistant.components.intellifire import IntellifireDataUpdateCoordinator
-from homeassistant.components.intellifire.entity import IntellifireEntity
+from .coordinator import IntellifireDataUpdateCoordinator
+from .entity import IntellifireEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback

@@ -19,8 +19,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.dt import utcnow
 
-from . import IntellifireDataUpdateCoordinator
-from ...helpers.entity import EntityCategory
+from .coordinator import IntellifireDataUpdateCoordinator
+from homeassistant.helpers.entity import EntityCategory
 from .const import DOMAIN
 from .entity import IntellifireEntity
 
