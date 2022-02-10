@@ -32,40 +32,34 @@ class IntellifireButtonEntityDescription(
 
 INTELLIFIRE_BUTTONS: tuple[IntellifireButtonEntityDescription, ...] = (
     IntellifireButtonEntityDescription(
-        key="beep",
-        name="Annoying Beep",
-        button_fn=lambda control_api: control_api.beep(
-            fireplace=control_api.default_fireplace
-        ),
-        icon="mdi:air-horn",
-    ),
-    IntellifireButtonEntityDescription(
         key="height_0",
         name="Flame 0",
         button_fn=lambda control_api: control_api.set_flame_height(
             fireplace=control_api.default_fireplace, height=0
         ),
-    ), IntellifireButtonEntityDescription(
+    ),
+    IntellifireButtonEntityDescription(
         key="height_1",
         name="Flame 1",
         button_fn=lambda control_api: control_api.set_flame_height(
             fireplace=control_api.default_fireplace, height=1
         ),
-    ), IntellifireButtonEntityDescription(
+    ),
+    IntellifireButtonEntityDescription(
         key="height_2",
         name="Flame 2",
-
-
         button_fn=lambda control_api: control_api.set_flame_height(
             fireplace=control_api.default_fireplace, height=2
         ),
-    ), IntellifireButtonEntityDescription(
+    ),
+    IntellifireButtonEntityDescription(
         key="height_3",
         name="Flame 3",
         button_fn=lambda control_api: control_api.set_flame_height(
             fireplace=control_api.default_fireplace, height=3
         ),
-    ), IntellifireButtonEntityDescription(
+    ),
+    IntellifireButtonEntityDescription(
         key="height_4",
         name="Flame 4",
         button_fn=lambda control_api: control_api.set_flame_height(
@@ -76,9 +70,9 @@ INTELLIFIRE_BUTTONS: tuple[IntellifireButtonEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: ConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the fans."""
     coordinator: IntellifireDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]

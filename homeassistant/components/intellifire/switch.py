@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Awaitable
 
 from intellifire4py import IntellifireControlAsync, IntellifirePollData
 
@@ -20,8 +20,8 @@ from .const import DOMAIN, LOGGER
 class IntellifireSwitchRequiredKeysMixin:
     """Mixin for required keys."""
 
-    on_fn: Callable[[IntellifireControlAsync], None]
-    off_fn: Callable[[IntellifireControlAsync], None]
+    on_fn: Callable[[IntellifireControlAsync], Awaitable]
+    off_fn: Callable[[IntellifireControlAsync], Awaitable]
     value_fn: Callable[[IntellifirePollData], bool]
     data_field: str
 
@@ -83,13 +83,13 @@ class IntellifireSwitch(IntellifireEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the switch."""
-        await self.entity_description.on_fn(self.coordinator.control_api)  # type: ignore
+        await self.entity_description.on_fn(self.coordinator.control_api)
         setattr(self.coordinator.api.data, self.entity_description.data_field, 1)
         await self.async_update_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off the switch."""
-        await self.entity_description.on_fn(self.coordinator.control_api)  # type: ignore
+        await self.entity_description.off_fn(self.coordinator.control_api)
         setattr(self.coordinator.api.data, self.entity_description.data_field, 0)
         await self.async_update_ha_state()
 

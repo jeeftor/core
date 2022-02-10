@@ -138,6 +138,7 @@ async def async_setup_entry(
 
 class IntellifireSensor(IntellifireEntity, SensorEntity):
     """Extends IntellifireEntity with Sensor specific logic."""
+
     entity_description: IntellifireSensorEntityDescription
 
     @property

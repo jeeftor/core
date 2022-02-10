@@ -3,7 +3,7 @@ from __future__ import annotations
 
 # FOR TESTING ONLY REMOVE FROM PRODUCTION
 import os
-from typing import Any
+from typing import Any, Final
 
 from aiohttp import ClientConnectionError
 from intellifire4py import IntellifireAsync, IntellifireControlAsync
@@ -26,6 +26,12 @@ from .const import DOMAIN
 h = os.getenv("IFT_HOST")
 u = os.getenv("IFT_USER")
 p = os.getenv("IFT_PASS")
+
+
+CONTROL_TYPES: Final[set[str]] = {
+    "local",
+    "cloud",
+}
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
