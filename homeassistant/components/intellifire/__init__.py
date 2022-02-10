@@ -24,6 +24,7 @@ PLATFORMS = [
     Platform.FAN,
     Platform.CLIMATE,
     Platform.BUTTON,
+    Platform.SELECT,
 ]
 
 

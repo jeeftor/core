@@ -6,14 +6,14 @@ from typing import Any, Awaitable, Callable
 
 from intellifire4py import IntellifireControlAsync, IntellifirePollData
 
-from .coordinator import IntellifireDataUpdateCoordinator
-from .entity import IntellifireEntity
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, LOGGER
+from .coordinator import IntellifireDataUpdateCoordinator
+from .entity import IntellifireEntity
 
 
 @dataclass()

@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Awaitable
+from typing import Awaitable, Callable
+
 from intellifire4py import IntellifireControlAsync
+
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from . import IntellifireDataUpdateCoordinator
 
+from . import IntellifireDataUpdateCoordinator
 from .const import DOMAIN, LOGGER
 from .entity import IntellifireEntity
 

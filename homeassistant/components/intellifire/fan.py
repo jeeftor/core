@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Any, Awaitable, Callable, Optional, List
+from typing import Any, Awaitable, Callable, List, Optional
 
 from intellifire4py import IntellifireControlAsync, IntellifirePollData
 
@@ -13,8 +13,6 @@ from homeassistant.components.fan import (
     FanEntity,
     FanEntityDescription,
 )
-from .coordinator import IntellifireDataUpdateCoordinator
-from .entity import IntellifireEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -24,14 +22,15 @@ from homeassistant.util.percentage import (
 )
 
 from .const import DOMAIN, LOGGER
+from .coordinator import IntellifireDataUpdateCoordinator
+from .entity import IntellifireEntity
 
 
 @dataclass
 class IntellifireFanRequiredKeysMixin:
-    set_fn: Callable[
-        [IntellifireControlAsync, int], Awaitable
-    ]  # What type actually gets returned... is it a Future?
+    """REquired keys for fan entity."""
 
+    set_fn: Callable[[IntellifireControlAsync, int], Awaitable]
     value_fn: Callable[[IntellifirePollData], bool]
     data_field: str
     named_speeds: List[str]

@@ -16,12 +16,12 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.dt import utcnow
 
-from .coordinator import IntellifireDataUpdateCoordinator
-from homeassistant.helpers.entity import EntityCategory
 from .const import DOMAIN
+from .coordinator import IntellifireDataUpdateCoordinator
 from .entity import IntellifireEntity
 
 

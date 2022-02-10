@@ -18,7 +18,7 @@ from homeassistant.const import (
     CONF_USERNAME,
     CONF_VERIFY_SSL,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN
@@ -60,6 +60,7 @@ async def validate_host_input(hass: HomeAssistant, host: str) -> str:
 
 
 async def validate_api_access(hass: HomeAssistant, user_input: dict[str, Any]):
+    """Validate username/password against api."""
     ift_control = IntellifireControlAsync(
         fireplace_ip=user_input[CONF_HOST],
         use_http=(not user_input[CONF_SSL]),
@@ -70,7 +71,7 @@ async def validate_api_access(hass: HomeAssistant, user_input: dict[str, Any]):
             username=user_input[CONF_USERNAME],
             password=user_input[CONF_PASSWORD],
         )
-        username = await ift_control.get_username()
+        await ift_control.get_username()
 
     finally:
         await ift_control.close()
