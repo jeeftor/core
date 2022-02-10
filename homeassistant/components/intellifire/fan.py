@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-from typing import Any, Awaitable, Callable, Optional
+from typing import Any, Awaitable, Callable, Optional, List
 
 from intellifire4py import IntellifireControlAsync, IntellifirePollData
 
@@ -34,7 +34,7 @@ class IntellifireFanRequiredKeysMixin:
 
     value_fn: Callable[[IntellifirePollData], bool]
     data_field: str
-    named_speeds: [str]
+    named_speeds: List[str]
 
 
 @dataclass

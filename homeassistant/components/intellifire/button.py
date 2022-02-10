@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Awaitable
 
 from intellifire4py import IntellifireControlAsync
 
@@ -20,7 +20,7 @@ from .const import DOMAIN, LOGGER
 class IntellifireButtonRequiredKeysMixin:
     """Mixin for required keys."""
 
-    button_fn: Callable[[IntellifireControlAsync], None]
+    button_fn: Callable[[IntellifireControlAsync], Awaitable]
 
 
 @dataclass
