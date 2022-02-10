@@ -23,6 +23,9 @@ from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN
 
+# During testing this block was very useful to
+# pre-fill out some information
+# it should be removed before final commits
 h = os.getenv("IFT_HOST")
 u = os.getenv("IFT_USER")
 p = os.getenv("IFT_PASS")
