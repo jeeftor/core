@@ -34,12 +34,12 @@ class IntellifireBinarySensorEntityDescription(
 
 
 INTELLIFIRE_BINARY_SENSORS: tuple[IntellifireBinarySensorEntityDescription, ...] = (
-    # IntellifireBinarySensorEntityDescription(
-    #     key="on_off",  # This is the sensor name
-    #     name="Flame",  # This is the human readable name
-    #     icon="mdi:fire",
-    #     value_fn=lambda data: data.is_on,
-    # ),
+    IntellifireBinarySensorEntityDescription(
+        key="on_off",  # This is the sensor name
+        name="Flame",  # This is the human readable name
+        icon="mdi:fire",
+        value_fn=lambda data: data.is_on,
+    ),
     IntellifireBinarySensorEntityDescription(
         key="timer_on",
         name="Timer On",
