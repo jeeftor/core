@@ -1,17 +1,31 @@
 {
   "config": {
     "step": {
-      "user": {
+      "local_config": {
+        "description": "Local Configuration",
         "data": {
           "host": "[%key:common::config_flow::data::host%]"
         }
+      },
+      "api_config": {
+        "description": "API Config",
+        "data": {
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
+        }
+      },
+      "user": {
+        "description": "Username and password are the same information used in your IntelliFire Android/iOS application."
       }
     },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "api_error": "api_error",
+      "iftapi_connect": "iftapi_connect"
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
   }
 }
+
