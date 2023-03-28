@@ -12,3 +12,7 @@ LOGGER = logging.getLogger(__package__)
 CONF_SERIAL = "serial"
 
 DEFAULT_THERMOSTAT_TEMP = 21
+
+
+CONF_CLOUD_READ_MODE = "cloud_read"
+CONF_CLOUD_CONTROL_MODE = "cloud_control"

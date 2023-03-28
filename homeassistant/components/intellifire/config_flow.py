@@ -6,17 +6,26 @@ from dataclasses import dataclass
 from typing import Any
 
 from aiohttp import ClientConnectionError
-from intellifire4py import AsyncUDPFireplaceFinder
-from intellifire4py.exceptions import LoginException
-from intellifire4py.intellifire import IntellifireAPICloud, IntellifireAPILocal
+from intellifire4py import UDPFireplaceFinder
+from intellifire4py.cloud_api import IntelliFireAPICloud
+from intellifire4py.exceptions import LoginError
+from intellifire4py.local_api import IntelliFireAPILocal
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.components.dhcp import DhcpServiceInfo
 from homeassistant.const import CONF_API_KEY, CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import config_validation as cv
 
-from .const import CONF_USER_ID, DOMAIN, LOGGER
+from .const import (
+    CONF_CLOUD_CONTROL_MODE,
+    CONF_CLOUD_READ_MODE,
+    CONF_USER_ID,
+    DOMAIN,
+    LOGGER,
+)
 
 STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(CONF_HOST): str})
 
@@ -37,7 +46,7 @@ async def validate_host_input(host: str, dhcp_mode: bool = False) -> str:
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
     LOGGER.debug("Instantiating IntellifireAPI with host: [%s]", host)
-    api = IntellifireAPILocal(fireplace_ip=host)
+    api = IntelliFireAPILocal(fireplace_ip=host)
     await api.poll(suppress_warnings=dhcp_mode)
     serial = api.data.serial
 
@@ -61,7 +70,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _find_fireplaces(self):
         """Perform UDP discovery."""
-        fireplace_finder = AsyncUDPFireplaceFinder()
+        fireplace_finder = UDPFireplaceFinder()
         discovered_hosts = await fireplace_finder.search_fireplace(timeout=12)
         configured_hosts = {
             entry.data[CONF_HOST]
@@ -84,7 +93,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Validate username/password against api."""
         LOGGER.debug("Attempting login to iftapi with: %s", username)
 
-        ift_cloud = IntellifireAPICloud()
+        ift_cloud = IntelliFireAPICloud()
         await ift_cloud.login(username=username, password=password)
         api_key = ift_cloud.get_fireplace_api_key()
         user_id = ift_cloud.get_user_id()
@@ -143,7 +152,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 LOGGER.error(
                     "Could not connect to iftapi.net over https - verify connectivity"
                 )
-            except LoginException:
+            except LoginError:
                 errors["base"] = "api_error"
                 LOGGER.error("Invalid credentials for iftapi.net")
 
@@ -263,7 +272,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_dhcp_confirm()
 
-    async def async_step_dhcp_confirm(self, user_input=None):
+    async def async_step_dhcp_confirm(self, user_input=None) -> FlowResult:
         """Attempt to confirm."""
 
         LOGGER.debug("STEP: dhcp_confirm")
@@ -281,4 +290,47 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(
             title=f"Fireplace {serial}",
             data={CONF_HOST: host},
+        )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return IntelliFireOptionsFlowHandler(config_entry)
+
+
+class IntelliFireOptionsFlowHandler(config_entries.OptionsFlow):
+    """Options flow for IntelliFire component."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize the Met OptionsFlow."""
+        self._config_entry = config_entry
+        self._errors: dict[str, Any] = {}
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Configure options for Met."""
+        LOGGER.debug("STEP: init")
+        return await self.async_step_options()
+
+    async def async_step_options(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Create the options step for a account."""
+
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="options",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_CLOUD_READ_MODE): cv.boolean,
+                    vol.Required(CONF_CLOUD_CONTROL_MODE): cv.boolean,
+                }
+            ),
+            errors=self._errors,
         )

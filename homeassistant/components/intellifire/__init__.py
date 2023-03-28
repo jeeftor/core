@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from aiohttp import ClientConnectionError
-from intellifire4py import IntellifireControlAsync
-from intellifire4py.exceptions import LoginException
-from intellifire4py.intellifire import IntellifireAPICloud, IntellifireAPILocal
+from intellifire4py.cloud_api import IntelliFireAPICloud
+from intellifire4py.control import IntelliFireControlMode
+from intellifire4py.exceptions import LoginError
+from intellifire4py.local_api import IntelliFireAPILocal
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -17,7 +18,13 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .const import CONF_USER_ID, DOMAIN, LOGGER
+from .const import (
+    CONF_CLOUD_CONTROL_MODE,
+    CONF_CLOUD_READ_MODE,
+    CONF_USER_ID,
+    DOMAIN,
+    LOGGER,
+)
 from .coordinator import IntellifireDataUpdateCoordinator
 
 PLATFORMS = [
@@ -39,35 +46,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         LOGGER.debug("Old config entry format detected: %s", entry.unique_id)
         raise ConfigEntryAuthFailed
 
-    ift_control = IntellifireControlAsync(
-        fireplace_ip=entry.data[CONF_HOST],
-    )
+    # Additionally - verify credentials during login process
+    cloud_api = IntelliFireAPICloud()
     try:
-        await ift_control.login(
+        await cloud_api.login(
             username=entry.data[CONF_USERNAME],
             password=entry.data[CONF_PASSWORD],
         )
     except (ConnectionError, ClientConnectionError) as err:
         raise ConfigEntryNotReady from err
-    except LoginException as err:
+    except LoginError as err:
         raise ConfigEntryAuthFailed(err) from err
 
-    finally:
-        await ift_control.close()
-
-    # Extract API Key and User_ID from ift_control
-    # Eventually this will migrate to using IntellifireAPICloud
-
+    # Once logged in - verify the config data is up to date.
     if CONF_USER_ID not in entry.data or CONF_API_KEY not in entry.data:
         LOGGER.info(
             "Updating intellifire config entry for %s with api information",
             entry.unique_id,
         )
-        cloud_api = IntellifireAPICloud()
-        await cloud_api.login(
-            username=entry.data[CONF_USERNAME],
-            password=entry.data[CONF_PASSWORD],
-        )
+
         api_key = cloud_api.get_fireplace_api_key()
         user_id = cloud_api.get_user_id()
         # Update data entry
@@ -79,13 +76,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 CONF_USER_ID: user_id,
             },
         )
-
     else:
         api_key = entry.data[CONF_API_KEY]
         user_id = entry.data[CONF_USER_ID]
 
     # Instantiate local control
-    api = IntellifireAPILocal(
+    api = IntelliFireAPILocal(
         fireplace_ip=entry.data[CONF_HOST],
         api_key=api_key,
         user_id=user_id,
@@ -93,9 +89,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Define the update coordinator
     coordinator = IntellifireDataUpdateCoordinator(
-        hass=hass,
-        api=api,
+        hass=hass, local_api=api, cloud_api=cloud_api
     )
+
+    entry.async_on_unload(entry.add_update_listener(update_listener))
 
     await coordinator.async_config_entry_first_refresh()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
@@ -110,3 +107,27 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
+
+async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Handle options update."""
+
+    coordinator: IntellifireDataUpdateCoordinator = hass.data.get(DOMAIN)[  # type: ignore[index]
+        entry.entry_id
+    ]
+    cloud_read_mode = entry.options[CONF_CLOUD_READ_MODE]
+    cloud_control_mode = entry.options[CONF_CLOUD_CONTROL_MODE]
+
+    if cloud_control_mode:
+        await coordinator.set_control_mode(IntelliFireControlMode.CLOUD)
+        LOGGER.info("CONTROL: Updating %s to CLOUD", coordinator.control_mode)
+    else:
+        await coordinator.set_control_mode(IntelliFireControlMode.LOCAL)
+        LOGGER.info("CONTROL: Updating %s to LOCAL", coordinator.control_mode)
+
+    if cloud_read_mode:
+        LOGGER.info("READ: Updating %s to CLOUD", coordinator.read_mode)
+        await coordinator.set_read_mode(IntelliFireControlMode.CLOUD)
+    else:
+        await coordinator.set_read_mode(IntelliFireControlMode.LOCAL)
+        LOGGER.info("READ: Updating %s to LOCAL", coordinator.read_mode)

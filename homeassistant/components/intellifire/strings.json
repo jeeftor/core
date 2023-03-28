@@ -35,5 +35,17 @@
       "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]",
       "not_intellifire_device": "Not an IntelliFire Device."
     }
+  },
+  "options": {
+    "step": {
+      "options": {
+        "data": {
+          "cloud_read": "READ from Cloud API",
+          "cloud_control": "CONTROL from Cloud API"
+        },
+        "description": "Please select if you wish to use Cloud or Local APIs",
+        "title": "Local/Cloud API Selection."
+      }
+    }
   }
 }

@@ -21,7 +21,7 @@ def mock_fireplace_finder_none() -> Generator[None, MagicMock, None]:
     mock_found_fireplaces = Mock()
     mock_found_fireplaces.ips = []
     with patch(
-        "homeassistant.components.intellifire.config_flow.AsyncUDPFireplaceFinder.search_fireplace"
+        "homeassistant.components.intellifire.config_flow.UDPFireplaceFinder.search_fireplace"
     ):
         yield mock_found_fireplaces
 
@@ -32,7 +32,7 @@ def mock_fireplace_finder_single() -> Generator[None, MagicMock, None]:
     mock_found_fireplaces = Mock()
     mock_found_fireplaces.ips = ["192.168.1.69"]
     with patch(
-        "homeassistant.components.intellifire.config_flow.AsyncUDPFireplaceFinder.search_fireplace"
+        "homeassistant.components.intellifire.config_flow.UDPFireplaceFinder.search_fireplace"
     ):
         yield mock_found_fireplaces
 
@@ -44,7 +44,7 @@ def mock_intellifire_config_flow() -> Generator[None, MagicMock, None]:
     data_mock.serial = "12345"
 
     with patch(
-        "homeassistant.components.intellifire.config_flow.IntellifireAPILocal",
+        "homeassistant.components.intellifire.config_flow.IntelliFireAPILocal",
         autospec=True,
     ) as intellifire_mock:
         intellifire = intellifire_mock.return_value

@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from intellifire4py import IntellifirePollData
+from intellifire4py.model import IntelliFirePollData
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -28,7 +28,7 @@ from .entity import IntellifireEntity
 class IntellifireSensorRequiredKeysMixin:
     """Mixin for required keys."""
 
-    value_fn: Callable[[IntellifirePollData], int | str | datetime | None]
+    value_fn: Callable[[IntelliFirePollData], int | str | datetime | float | None]
 
 
 @dataclass
@@ -39,14 +39,14 @@ class IntellifireSensorEntityDescription(
     """Describes a sensor entity."""
 
 
-def _time_remaining_to_timestamp(data: IntellifirePollData) -> datetime | None:
+def _time_remaining_to_timestamp(data: IntelliFirePollData) -> datetime | None:
     """Define a sensor that takes into account timezone."""
     if not (seconds_offset := data.timeremaining_s):
         return None
     return utcnow() + timedelta(seconds=seconds_offset)
 
 
-def _downtime_to_timestamp(data: IntellifirePollData) -> datetime | None:
+def _downtime_to_timestamp(data: IntelliFirePollData) -> datetime | None:
     """Define a sensor that takes into account a timezone."""
     if not (seconds_offset := data.downtime):
         return None
@@ -148,6 +148,6 @@ class IntellifireSensor(IntellifireEntity, SensorEntity):
     entity_description: IntellifireSensorEntityDescription
 
     @property
-    def native_value(self) -> int | str | datetime | None:
+    def native_value(self) -> int | str | datetime | float | None:
         """Return the state."""
         return self.entity_description.value_fn(self.coordinator.read_api.data)
