@@ -16,7 +16,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_API_TOKEN
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN
+from .const import DOMAIN, LOGGER
 
 
 async def _validate_or_obtain_access_url(input_string: str) -> str:
@@ -36,16 +36,17 @@ async def _validate_or_obtain_access_url(input_string: str) -> str:
         SimpleFinClaimError: If there's an error in claim token processing.
     """
 
-    # Any exceptions will be handled outside of this function
-    access_url = (
-        input_string
-        if input_string.startswith("http")
-        else await SimpleFin.claim_setup_token(input_string)
-    )
+    if not input_string.startswith("http"):
+        LOGGER.info("[Setup Token] - Claiming Access URL")
+        access_url = await SimpleFin.claim_setup_token(input_string)
 
-    # Decode and fetch data for the access URL
-    if input_string.startswith("http"):
+    else:
+        LOGGER.info("[Access Url] - 'http' string detected")
+        access_url = input_string
+        LOGGER.info("[Access Url] - validating access url")
         SimpleFin.decode_access_url(access_url)
+
+    LOGGER.info("[Access Url] - Fetching data")
     simple_fin = SimpleFin(access_url=access_url)
     await simple_fin.fetch_data()
     return access_url
