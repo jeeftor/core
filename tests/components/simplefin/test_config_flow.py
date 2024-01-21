@@ -1,5 +1,5 @@
 """Test config flow.""" ""
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from simplefin4py import FinancialData
@@ -13,9 +13,12 @@ from simplefin4py.exceptions import (
 
 from homeassistant import config_entries
 from homeassistant.components.simplefin import DOMAIN
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_API_TOKEN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+
+from tests.common import MockConfigEntry
 
 
 async def test_access_url(hass: HomeAssistant, mock_get_financial_data):
@@ -118,3 +121,54 @@ async def test_successful_claim(
             {CONF_API_TOKEN: "donJulio"},
         )
         assert result["type"] == FlowResultType.CREATE_ENTRY
+
+
+async def test_reauth_flow(
+    hass: HomeAssistant, mock_setup_entry: AsyncMock, mock_get_financial_data
+):
+    """Test reauth flow."""
+    MOCK_TOKEN = "http://user:password@string"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_API_TOKEN: "https://i:am@yomama.house.com"},
+        version=1,
+        unique_id=MOCK_TOKEN,
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": "reauth",
+            "unique_id": entry.unique_id,
+            "entry_id": entry.entry_id,
+        },
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_API_TOKEN: MOCK_TOKEN},
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+
+
+async def test_init(
+    hass: HomeAssistant,
+    mock_access_url,
+    mock_config_entry: MockConfigEntry,
+    mock_get_financial_data,
+):
+    """Test the init method."""
+    mock_config_entry.add_to_hass(hass)
+
+    assert mock_config_entry.unique_id == mock_access_url
+    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    assert mock_config_entry.state == ConfigEntryState.LOADED
+    await hass.config_entries.async_unload(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+    assert mock_config_entry.state is ConfigEntryState.NOT_LOADED

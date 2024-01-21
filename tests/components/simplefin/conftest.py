@@ -1,11 +1,41 @@
 """Test fixtures for SimpleFIN."""
-from unittest.mock import MagicMock, patch
+from collections.abc import Generator
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from simplefin4py import FinancialData
 from simplefin4py.exceptions import SimpleFinInvalidClaimTokenError
 
-from tests.common import load_json_value_fixture
+from homeassistant.components.simplefin import DOMAIN
+from homeassistant.const import CONF_API_TOKEN
+
+from tests.common import MockConfigEntry, load_json_value_fixture
+
+
+@pytest.fixture
+def mock_setup_entry() -> Generator[AsyncMock, None, None]:
+    """Mock setting up a config entry."""
+    with patch(
+        "homeassistant.components.simplefin.async_setup_entry", return_value=True
+    ) as mock_setup:
+        yield mock_setup
+
+
+@pytest.fixture
+def mock_access_url() -> str:
+    """Fixture to mock the access_url method of SimpleFin."""
+    return "https://i:am@yomama.house.com"
+
+
+@pytest.fixture
+async def mock_config_entry(mock_access_url) -> MockConfigEntry:
+    """Fixture for MockConfigEntry."""
+    return MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_API_TOKEN: mock_access_url},
+        version=1,
+        unique_id=mock_access_url,
+    )
 
 
 @pytest.fixture

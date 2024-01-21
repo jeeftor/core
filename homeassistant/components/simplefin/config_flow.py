@@ -1,5 +1,6 @@
 """Config flow for SimpleFIN integration."""
 
+from collections.abc import Mapping
 from typing import Any
 
 from simplefin4py import SimpleFin
@@ -81,6 +82,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "payment_required"
             except SimpleFinAuthError:
                 errors["base"] = "auth_error"
+
+            entry = await self.async_set_unique_id(user_input[CONF_API_TOKEN])
+            if entry:
+                self.hass.config_entries.async_update_entry(entry, data=user_input)
+                await self.hass.config_entries.async_reload(entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+
+            self._abort_if_unique_id_configured()
+
             if not errors:
                 return self.async_create_entry(
                     title="SimpleFIN", data={"access_url": user_input[CONF_API_TOKEN]}
@@ -95,3 +105,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ),
             errors=errors,
         )
+
+    async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> FlowResult:
+        """Reauth just re-triggers user step."""
+        return await self.async_step_user()
