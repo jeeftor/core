@@ -9,7 +9,6 @@
       }
     },
     "error": {
-      "access_error": "",
       "auth_error": "Authentication failed. This could be because access has been revoked or if the credentials are incorrect",
       "claim_error": "The claim token either does not exist or has already been used claimed by someone else. Receiving this could mean that the user\u2019s transaction information has been compromised",
       "invalid_claim_token": "The claim token is invalid and could not be decoded",
