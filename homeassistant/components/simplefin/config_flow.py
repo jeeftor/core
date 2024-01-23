@@ -17,7 +17,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_API_TOKEN
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, LOGGER
+from .const import CONF_ACCESS_URL, DOMAIN, LOGGER
 
 
 async def _validate_or_obtain_access_url(input_string: str) -> str:
@@ -93,7 +93,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             if not errors:
                 return self.async_create_entry(
-                    title="SimpleFIN", data={"access_url": user_input[CONF_API_TOKEN]}
+                    title="SimpleFIN",
+                    data={CONF_ACCESS_URL: user_input[CONF_API_TOKEN]},
                 )
 
         return self.async_show_form(
