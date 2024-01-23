@@ -6,8 +6,7 @@ import pytest
 from simplefin4py import FinancialData
 from simplefin4py.exceptions import SimpleFinInvalidClaimTokenError
 
-from homeassistant.components.simplefin import DOMAIN
-from homeassistant.const import CONF_API_TOKEN
+from homeassistant.components.simplefin import CONF_ACCESS_URL, DOMAIN
 
 from tests.common import MockConfigEntry, load_json_value_fixture
 
@@ -32,7 +31,7 @@ async def mock_config_entry(mock_access_url) -> MockConfigEntry:
     """Fixture for MockConfigEntry."""
     return MockConfigEntry(
         domain=DOMAIN,
-        data={CONF_API_TOKEN: mock_access_url},
+        data={CONF_ACCESS_URL: mock_access_url},
         version=1,
         unique_id=mock_access_url,
     )
