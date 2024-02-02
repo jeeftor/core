@@ -9,7 +9,7 @@ from simplefin4py.model import AccountType
 from homeassistant.components.simplefin.coordinator import (
     SimpleFinDataUpdateCoordinator,
 )
-from homeassistant.components.simplefin.sensor import SimpleFinBalanceSensor
+from homeassistant.components.simplefin.sensor import SimpleFinSensor
 
 
 @pytest.mark.asyncio
@@ -35,5 +35,5 @@ async def test_simplefin_balance_sensor_icon(account_type, expected_icon):
         mock_fetch_data.return_value = account
         yield
         coordinator = SimpleFinDataUpdateCoordinator(None, account)
-        sensor = SimpleFinBalanceSensor(account, coordinator)
+        sensor = SimpleFinSensor(account, coordinator)
         assert sensor.icon == expected_icon

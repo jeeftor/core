@@ -1,108 +1,90 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
 
 from simplefin4py import Account
-from simplefin4py.model import AccountType
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
+    SensorEntityDescription,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import SimpleFinDataUpdateCoordinator
+from .entity import SimpleFinEntity
+
+# def _enum_to_icon(inferred_type: AccountType) -> str:
+#     """Based on the inferred account type - guess a starting icon."""
+#     if inferred_type == AccountType.CHECKING:
+#         return "mdi:checkbook"
+#     if inferred_type == AccountType.CREDIT_CARD:
+#         return "mdi:credit-card"
+#     if inferred_type == AccountType.SAVINGS:
+#         return "mdi:piggy-bank-outline"
+#     if inferred_type == AccountType.INVESTMENT:
+#         return "mdi:chart-areaspline"
+#     if inferred_type == AccountType.MORTGAGE:
+#         return "mdi:home-city-outline"
+#
+#     return "mdi:cash"
 
 
-def _enum_to_icon(inferred_type: AccountType) -> str:
-    """Based on the inferred account type - guess a starting icon."""
-    if inferred_type == AccountType.CHECKING:
-        return "mdi:checkbook"
-    if inferred_type == AccountType.CREDIT_CARD:
-        return "mdi:credit-card"
-    if inferred_type == AccountType.SAVINGS:
-        return "mdi:piggy-bank-outline"
-    if inferred_type == AccountType.INVESTMENT:
-        return "mdi:chart-areaspline"
-    if inferred_type == AccountType.MORTGAGE:
-        return "mdi:home-city-outline"
+@dataclass(frozen=True)
+class SimpleFinSensorRequiredKeysMixin:
+    """Mixin for required keys."""
 
-    return "mdi:cash"
+    value_fn: Callable[[Account], int | str | datetime | None]
 
 
-class SimpleFinBalanceSensor(
-    CoordinatorEntity[SimpleFinDataUpdateCoordinator], SensorEntity
+@dataclass(frozen=True)
+class SimpleFinSensorEntityDescription(
+    SensorEntityDescription, SimpleFinSensorRequiredKeysMixin
 ):
-    """Representation of a SimpleFinBalanceSensor."""
+    """Describes a sensor entity."""
 
-    _attr_state_class = SensorStateClass.TOTAL
-    _attr_device_class = SensorDeviceClass.MONETARY
-    _attr_has_entity_name = True
 
-    def __init__(
-        self,
-        account,
-        coordinator: SimpleFinDataUpdateCoordinator,
-    ) -> None:
-        """Initialize sensor."""
-        super().__init__(coordinator)
-        self.account_id = account.id
-        self._attr_unique_id = f"account_{account.id}".lower()
-        self._attr_name = account.name
+@dataclass(frozen=True)
+class SimpleFinSensorBalanceRequiredKeysMixin(SimpleFinSensorRequiredKeysMixin):
+    """Mixin for required keys."""
 
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, account.org.domain)},
-            name=account.org.name,
-            entry_type=DeviceEntryType.SERVICE,
-            manufacturer="SimpleFIN",
-            model="Account",
-        )
+    icon_fn: Callable[[Account], str] | None
+    unit_fn: Callable[[Account], str] | None
 
-    @property
-    def available(self) -> bool:
-        """Determine if sensor is available."""
-        return True
 
-    @property
-    def native_value(self) -> int | None:
-        """Return the account balance."""
-        return self.coordinator.data.get_account_for_id(self.account_id).balance
+@dataclass(frozen=True)
+class SimpleFinBalanceSensorEntityDescription(
+    SimpleFinSensorEntityDescription, SimpleFinSensorBalanceRequiredKeysMixin
+):
+    """Describes a sensor entity."""
 
-    @property
-    def icon(self) -> str | None:
-        """Utilize the inferred account type value as an icon."""
-        return _enum_to_icon(
-            self.coordinator.data.get_account_for_id(
-                self.account_id
-            ).inferred_account_type
-        )
 
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        """Return the currency of this account."""
-        return self.coordinator.data.get_account_for_id(self.account_id).currency
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any] | None:
-        """Return additional sensor state attributes."""
-        account_info: Account = self.coordinator.data.get_account_for_id(
-            self.account_id
-        )
-
-        # Example attributes
-        return {
-            "currency": account_info.currency,
-            "available_balance": account_info.available_balance,
-            "last_update": account_info.last_update,
-            # Add more attributes here
-        }
+SIMPLEFIN_SENSORS: tuple[SimpleFinSensorEntityDescription, ...] = (
+    SimpleFinBalanceSensorEntityDescription(
+        key="balance",
+        translation_key="balance",
+        state_class=SensorStateClass.TOTAL,
+        device_class=SensorDeviceClass.MONETARY,
+        value_fn=lambda account: account.balance,
+        unit_fn=lambda account: account.currency,
+        icon_fn=lambda account: account.inferred_account_type,
+    ),
+    SimpleFinSensorEntityDescription(
+        key="last_update",
+        translation_key="last update",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda account: account.last_update,
+    ),
+)
 
 
 async def async_setup_entry(
@@ -116,10 +98,49 @@ async def async_setup_entry(
     ]
     accounts = simplefin_coordinator.data.accounts
 
-    async_add_entities(
-        [
-            SimpleFinBalanceSensor(account, simplefin_coordinator)
-            for account in accounts
-        ],
-        True,
-    )
+    for account in accounts:
+        for sensor_description in SIMPLEFIN_SENSORS:
+            async_add_entities(
+                [
+                    SimpleFinSensor(
+                        coordinator=simplefin_coordinator,
+                        description=sensor_description,
+                        account=account,
+                    )
+                ],
+                True,
+            )
+
+
+class SimpleFinSensor(SimpleFinEntity, SensorEntity):
+    """Representation of a SimpleFinBalanceSensor."""
+
+    entity_description: SimpleFinSensorEntityDescription
+
+    @property
+    def native_value(self) -> int | str | datetime | None:
+        """Return the state."""
+        account_data = self.coordinator.data.get_account_for_id(self._account_id)
+        return self.entity_description.value_fn(account_data)
+
+    @property
+    def icon(self) -> str | None:
+        """Return the currency of this account."""
+
+        icon_fn = getattr(self.entity_description, "icon_fn", None)
+
+        if icon_fn and callable(icon_fn):
+            account_data = self.coordinator.data.get_account_for_id(self._account_id)
+            return icon_fn(account_data)
+
+        return icon_fn
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the currency of this account."""
+        unit_fn = getattr(self.entity_description, "unit_fn", None)
+        if unit_fn and callable(unit_fn):
+            account_data = self.coordinator.data.get_account_for_id(self._account_id)
+            return unit_fn(account_data)
+
+        return unit_fn
