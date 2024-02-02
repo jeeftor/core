@@ -57,8 +57,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for the initial setup of a SimpleFIN integration."""
 
 
-    def __init__(self) -> None:
-        """Initialize config flow."""
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
