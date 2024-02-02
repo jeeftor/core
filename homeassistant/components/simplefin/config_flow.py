@@ -56,7 +56,6 @@ async def _validate_or_obtain_access_url(input_string: str) -> str:
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for the initial setup of a SimpleFIN integration."""
 
-    VERSION = 1
 
     def __init__(self) -> None:
         """Initialize config flow."""
