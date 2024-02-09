@@ -15,5 +15,15 @@
       "payment_required": "You presented a valid access url, however payment is required before you can obtain data",
       "url_error": "There was an issue parsing the Account URL"
     }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Balance"
+      },
+      "last_update": {
+        "name": "Last update"
+      }
+    }
   }
 }

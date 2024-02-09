@@ -19,8 +19,6 @@ async def test_init(
     assert mock_config_entry.unique_id == mock_access_url
     await hass.config_entries.async_setup(mock_config_entry.entry_id)
     assert mock_config_entry.state == ConfigEntryState.LOADED
-
-
     await hass.config_entries.async_unload(mock_config_entry.entry_id)
     await hass.async_block_till_done()
     assert mock_config_entry.state is ConfigEntryState.NOT_LOADED

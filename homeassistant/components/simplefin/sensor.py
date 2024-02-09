@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from simplefin4py import Account
 
@@ -21,21 +22,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .coordinator import SimpleFinDataUpdateCoordinator
 from .entity import SimpleFinEntity
-
-# def _enum_to_icon(inferred_type: AccountType) -> str:
-#     """Based on the inferred account type - guess a starting icon."""
-#     if inferred_type == AccountType.CHECKING:
-#         return "mdi:checkbook"
-#     if inferred_type == AccountType.CREDIT_CARD:
-#         return "mdi:credit-card"
-#     if inferred_type == AccountType.SAVINGS:
-#         return "mdi:piggy-bank-outline"
-#     if inferred_type == AccountType.INVESTMENT:
-#         return "mdi:chart-areaspline"
-#     if inferred_type == AccountType.MORTGAGE:
-#         return "mdi:home-city-outline"
-#
-#     return "mdi:cash"
 
 
 @dataclass(frozen=True)
@@ -79,7 +65,7 @@ SIMPLEFIN_SENSORS: tuple[SimpleFinSensorEntityDescription, ...] = (
     ),
     SimpleFinSensorEntityDescription(
         key="last_update",
-        translation_key="last update",
+        translation_key="last_update",
         entity_category=EntityCategory.DIAGNOSTIC,
         device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda account: account.last_update,
@@ -144,3 +130,17 @@ class SimpleFinSensor(SimpleFinEntity, SensorEntity):
             return unit_fn(account_data)
 
         return unit_fn
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Only for accounts with balances (unit_fn)."""
+
+        unit_fn = getattr(self.entity_description, "unit_fn", None)
+
+        if unit_fn and callable(unit_fn):
+            account_data = self.coordinator.data.get_account_for_id(self._account_id)
+
+            return {
+                "inferred_account_type": account_data.inferred_account_type.name.lower(),
+            }
+        return None

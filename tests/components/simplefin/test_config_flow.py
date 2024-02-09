@@ -13,7 +13,6 @@ from simplefin4py.exceptions import (
 
 from homeassistant import config_entries
 from homeassistant.components.simplefin import DOMAIN
-from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_API_TOKEN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
@@ -61,6 +60,13 @@ async def test_access_url_errors(
         )
         assert result["type"] == FlowResultType.FORM
         assert result["errors"] == {"base": error_key}
+
+    # Pass the entry creation
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_API_TOKEN: "http://user:password@string"},
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
 
 
 @pytest.mark.parametrize(
@@ -155,20 +161,3 @@ async def test_reauth_flow(
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
-
-
-async def test_init(
-    hass: HomeAssistant,
-    mock_access_url,
-    mock_config_entry: MockConfigEntry,
-    mock_get_financial_data,
-):
-    """Test the init method."""
-    mock_config_entry.add_to_hass(hass)
-
-    assert mock_config_entry.unique_id == mock_access_url
-    await hass.config_entries.async_setup(mock_config_entry.entry_id)
-    assert mock_config_entry.state == ConfigEntryState.LOADED
-    await hass.config_entries.async_unload(mock_config_entry.entry_id)
-    await hass.async_block_till_done()
-    assert mock_config_entry.state is ConfigEntryState.NOT_LOADED

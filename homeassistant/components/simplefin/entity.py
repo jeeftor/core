@@ -24,9 +24,9 @@ class SimpleFinEntity(CoordinatorEntity[SimpleFinDataUpdateCoordinator]):
         """Class initializer."""
         super().__init__(coordinator=coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"account_{account.id}_{description.key}".lower()
         self._account_id = account.id
 
+        self._attr_unique_id = f"account_{account.id}_{description.key}".lower()
         self._attr_name = f"{account.name} {description.translation_key}"
 
         self._attr_device_info = DeviceInfo(
