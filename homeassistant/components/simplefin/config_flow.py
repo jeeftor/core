@@ -35,6 +35,7 @@ async def _validate_or_obtain_access_url(input_string: str) -> str:
         SimpleFinAuthError
         SimpleFinInvalidClaimTokenError: If the input string is an invalid claim token.
         SimpleFinClaimError: If there's an error in claim token processing.
+
     """
 
     if not input_string.startswith("http"):
@@ -55,8 +56,6 @@ async def _validate_or_obtain_access_url(input_string: str) -> str:
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for the initial setup of a SimpleFIN integration."""
-
-
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

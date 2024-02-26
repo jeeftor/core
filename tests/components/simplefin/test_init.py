@@ -1,4 +1,4 @@
-"""Test config flow.""" ""
+"""Test config flow."""
 
 
 from homeassistant.config_entries import ConfigEntryState
