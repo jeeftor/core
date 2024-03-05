@@ -12,7 +12,6 @@ from homeassistant.components.simplefin.coordinator import (
 from homeassistant.components.simplefin.sensor import SimpleFinSensor
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "account_type, expected_icon",  # noqa: PT006
     [
