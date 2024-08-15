@@ -1,4 +1,4 @@
-"""Test fan entities."""
+"""Test intelliFire Sensors."""
 
 from unittest.mock import patch
 
@@ -26,13 +26,14 @@ async def test_all_sensor_entities(
 ) -> None:
     """Test all entities."""
     with (
-        patch("homeassistant.components.intellifire.PLATFORMS", [Platform.FAN]),
+        patch("homeassistant.components.intellifire.PLATFORMS", [Platform.SENSOR]),
         patch(
             "intellifire4py.unified_fireplace.UnifiedFireplace.build_fireplace_from_common",
             return_value=mock_fp,
         ),
     ):
         await setup_integration(hass, mock_config_entry_current)
+
         await snapshot_platform(
             hass, entity_registry, snapshot, mock_config_entry_current.entry_id
         )

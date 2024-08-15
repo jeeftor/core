@@ -1,0 +1,95 @@
+# serializer version: 1
+# name: test_all_sensor_entities[switch.intellifire_flame-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': set({
+    }),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'switch',
+    'entity_category': None,
+    'entity_id': 'switch.intellifire_flame',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Flame',
+    'platform': 'intellifire',
+    'previous_unique_id': None,
+    'supported_features': 0,
+    'translation_key': 'flame',
+    'unique_id': 'on_off_mock_serial',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_sensor_entities[switch.intellifire_flame-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'attribution': 'Data provided by unpublished Intellifire API',
+      'friendly_name': 'IntelliFire Flame',
+    }),
+    'context': <ANY>,
+    'entity_id': 'switch.intellifire_flame',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'on',
+  })
+# ---
+# name: test_all_sensor_entities[switch.intellifire_pilot_light-entry]
+  EntityRegistryEntrySnapshot({
+    'aliases': set({
+    }),
+    'area_id': None,
+    'capabilities': None,
+    'config_entry_id': <ANY>,
+    'device_class': None,
+    'device_id': <ANY>,
+    'disabled_by': None,
+    'domain': 'switch',
+    'entity_category': None,
+    'entity_id': 'switch.intellifire_pilot_light',
+    'has_entity_name': True,
+    'hidden_by': None,
+    'icon': None,
+    'id': <ANY>,
+    'labels': set({
+    }),
+    'name': None,
+    'options': dict({
+    }),
+    'original_device_class': None,
+    'original_icon': None,
+    'original_name': 'Pilot light',
+    'platform': 'intellifire',
+    'previous_unique_id': None,
+    'supported_features': 0,
+    'translation_key': 'pilot_light',
+    'unique_id': 'pilot_mock_serial',
+    'unit_of_measurement': None,
+  })
+# ---
+# name: test_all_sensor_entities[switch.intellifire_pilot_light-state]
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      'attribution': 'Data provided by unpublished Intellifire API',
+      'friendly_name': 'IntelliFire Pilot light',
+    }),
+    'context': <ANY>,
+    'entity_id': 'switch.intellifire_pilot_light',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'on',
+  })
+# ---

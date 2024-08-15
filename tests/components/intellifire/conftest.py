@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
 
 from aiohttp.client_reqrep import ConnectionKey
 from intellifire4py.const import IntelliFireApiMode
+from intellifire4py.control import IntelliFireController
 from intellifire4py.exceptions import LoginError
 from intellifire4py.model import (
     IntelliFireCommonFireplaceData,
@@ -343,7 +344,8 @@ def mock_fp(mock_common_data_local):
         mock_instance.web_client_id = "mock_web_client_id"
 
         mock_instance.read_api = MagicMock()  # If needed, you can mock this further
-        mock_instance.control_api = MagicMock()  # If needed, you can mock this further
+        mock_instance.control_api = AsyncMock(spec=IntelliFireController)
+        # mock_instance.control_api.send_command = AsyncMock()
 
         # Connectivity
         mock_instance.local_connectivity = True
