@@ -51,8 +51,6 @@ from .entity import WeatherFlowCloudEntity
 def _get_wind_direction_icon(degree: int) -> str:
     """Get the wind direction icon based on the degree."""
 
-    # degree = event.wind_direction_degrees
-
     if not 0 <= degree <= 360:
         raise ValueError("Degree must be between 0 and 360")
 
@@ -123,7 +121,6 @@ WEBSOCKET_WIND_SENSORS: tuple[
     WeatherFlowCloudSensorEntityDescriptionWebsocketWind(
         key="wind_direction",
         translation_key="wind_direction",
-        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.wind_direction_degrees,
         icon_fn=_get_wind_direction_icon,
         native_unit_of_measurement="°",
