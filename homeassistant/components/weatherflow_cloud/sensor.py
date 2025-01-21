@@ -44,7 +44,7 @@ from . import (
     WeatherFlowCloudUpdateCoordinatorREST,
     WeatherFlowCoordinators,
 )
-from .const import DOMAIN, REST_API, WEBSOCKET_API
+from .const import DOMAIN
 from .entity import WeatherFlowCloudEntity
 
 
@@ -419,7 +419,6 @@ class WeatherFlowWebsocketSensorObservation(WeatherFlowSensorBase):
     """Class for Websocket Observations."""
 
     entity_description: WeatherFlowCloudSensorEntityDescriptionWebsocketObservation
-    _attr_extra_state_attributes = {"Data source": WEBSOCKET_API}
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
@@ -434,7 +433,6 @@ class WeatherFlowWebsocketSensorWind(WeatherFlowSensorBase):
     """Class for wind over websockets."""
 
     entity_description: WeatherFlowCloudSensorEntityDescriptionWebsocketWind
-    _attr_extra_state_attributes = {"Data source": WEBSOCKET_API}
 
     @property
     def native_value(self) -> StateType | datetime:
@@ -466,7 +464,7 @@ class WeatherFlowCloudSensorREST(WeatherFlowSensorBase):
     """Class for a REST based sensor."""
 
     entity_description: WeatherFlowCloudSensorEntityDescription
-    _attr_extra_state_attributes = {"Data source": REST_API}
+
     coordinator: WeatherFlowCloudUpdateCoordinatorREST
 
     @property
