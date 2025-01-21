@@ -326,8 +326,7 @@ async def async_setup_entry(
         WebsocketObservation, WebsocketObservation, ListenStartMessage
     ] = coordinators.observation
 
-    entities: list[SensorEntity] = []
-    entities.extend(
+    entities: list[SensorEntity] = [
         WeatherFlowCloudSensorREST(rest_coordinator, sensor_description, station_id)
         for station_id in rest_coordinator.data
         for sensor_description in WF_SENSORS
