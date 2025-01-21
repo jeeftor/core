@@ -52,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         api_token=entry.data[CONF_API_TOKEN], session=async_get_clientsession(hass)
     )
 
-    stations: StationsResponseREST = await rest_api.async_get_stations()
+    stations = await rest_api.async_get_stations()
 
     # Define Rest Coordinator
     rest_data_coordinator = WeatherFlowCloudUpdateCoordinatorREST(
