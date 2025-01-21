@@ -51,32 +51,22 @@ from .entity import WeatherFlowCloudEntity
 def _get_wind_direction_icon(degree: int) -> str:
     """Get the wind direction icon based on the degree."""
 
-    if not 0 <= degree <= 360:
-        raise ValueError("Degree must be between 0 and 360")
+    if degree is None or not isinstance(degree, (int, float)):
+        raise ValueError("Degree must be a number")
 
-    # Normalize the degree to be within 0-360 range
-    degree = degree % 360
+    # Use integer division to divide into correct sector
+    sector = int(((degree % 360) + 22.5) / 45) % 8
 
-    # Define direction ranges
-    directions = [
-        (0, "mdi:arrow-up"),
-        (45, "mdi:arrow-top-right"),
-        (90, "mdi:arrow-right"),
-        (135, "mdi:arrow-bottom-right"),
-        (180, "mdi:arrow-down"),
-        (225, "mdi:arrow-bottom-left"),
-        (270, "mdi:arrow-left"),
-        (315, "mdi:arrow-top-left"),
-        (360, "mdi:arrow-up"),
-    ]
-
-    # Find the appropriate direction
-    for angle, icon in directions:
-        if degree < angle + 22.5:
-            return icon
-
-    # This line should never be reached, but it's here for completeness
-    return "mdi:arrow-up"
+    return [
+        "mdi:arrow-up",  # N   (337.5 - 22.5)
+        "mdi:arrow-top-right",  # NE  (22.5 - 67.5)
+        "mdi:arrow-right",  # E   (67.5 - 112.5)
+        "mdi:arrow-bottom-right",  # SE  (112.5 - 157.5)
+        "mdi:arrow-down",  # S   (157.5 - 202.5)
+        "mdi:arrow-bottom-left",  # SW  (202.5 - 247.5)
+        "mdi:arrow-left",  # W   (247.5 - 292.5)
+        "mdi:arrow-top-left",  # NW  (292.5 - 337.5)
+    ][sector]
 
 
 @dataclass(frozen=True, kw_only=True)
