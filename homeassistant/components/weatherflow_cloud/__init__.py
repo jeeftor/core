@@ -6,7 +6,6 @@ import asyncio
 from dataclasses import dataclass
 
 from weatherflow4py.api import WeatherFlowRestAPI
-from weatherflow4py.models.rest.stations import StationsResponseREST
 from weatherflow4py.models.ws.obs import WebsocketObservation
 from weatherflow4py.models.ws.types import EventType
 from weatherflow4py.models.ws.websocket_request import (
@@ -97,8 +96,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Run setup method.
     await asyncio.gather(
-        websocket_wind_coordinator._async_setup(),  # noqa: SLF001,
-        websocket_observation_coordinator._async_setup(),  # noqa: SLF001
+        websocket_wind_coordinator.async_setup(),
+        websocket_observation_coordinator.async_setup(),
     )
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = WeatherFlowCoordinators(

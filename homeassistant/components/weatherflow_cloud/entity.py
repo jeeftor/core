@@ -29,13 +29,3 @@ class WeatherFlowCloudEntity[T](CoordinatorEntity[BaseWeatherFlowCoordinator[T]]
             manufacturer=MANUFACTURER,
             configuration_url=f"https://tempestwx.com/station/{station_id}/grid",
         )
-
-    #
-    # @property
-    # def station(self):
-    #     """Individual Station data."""
-    #     return self.coordinator.get_station(self.station_id)
-    #     #
-    #     # if isinstance(self.coordinator, WeatherFlowCloudUpdateCoordinatorREST):
-    #     #     return self.coordinator.data[self.station_id]
-    #     # return self.coordinator.stations[self.station_id]

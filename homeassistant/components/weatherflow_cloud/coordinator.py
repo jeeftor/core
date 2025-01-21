@@ -1,5 +1,6 @@
 """Data coordinators."""
 
+from abc import ABC, abstractmethod
 from datetime import timedelta
 
 from aiohttp import ClientResponseError
@@ -27,7 +28,7 @@ from homeassistant.util.ssl import client_context
 from .const import DOMAIN, LOGGER
 
 
-class BaseWeatherFlowCoordinator[T](DataUpdateCoordinator[dict[int, T]]):
+class BaseWeatherFlowCoordinator[T](DataUpdateCoordinator[dict[int, T]], ABC):
     """Base class for WeatherFlow coordinators."""
 
     def __init__(
@@ -56,9 +57,9 @@ class BaseWeatherFlowCoordinator[T](DataUpdateCoordinator[dict[int, T]]):
             update_interval=update_interval,
         )
 
+    @abstractmethod
     def get_station_name(self, station_id: int):
         """Define a default implementation - that should always be overridden."""
-        return "UNSET"
 
 
 class WeatherFlowCloudUpdateCoordinatorREST(
@@ -138,13 +139,14 @@ class WeatherFlowCloudDataCallbackCoordinator[
         }
 
     async def _generic_callback(self, data: C):
+        """Handle incoming websocket data - RapidWindWS data will be parsed from the ob field, whereas ObservationTempestWS will be parsed directly."""
         device_id = data.device_id
         station_id = self.device_to_station_map[device_id]
         self._ws_data[station_id][device_id] = getattr(data, "ob", data)
         self.async_set_updated_data(self._ws_data)
 
-    async def _async_setup(self) -> None:
-        # Open the websocket connection
+    async def async_setup(self) -> None:
+        """Set up the websocket connection."""
         assert self.websocket_api is not None
         await self.websocket_api.connect(self._ssl_context)
         # Register callback

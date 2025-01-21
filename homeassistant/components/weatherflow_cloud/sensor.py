@@ -7,7 +7,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
 
 from weatherflow4py.models.rest.observation import Observation
 from weatherflow4py.models.ws.websocket_request import (
@@ -16,6 +15,7 @@ from weatherflow4py.models.ws.websocket_request import (
 )
 from weatherflow4py.models.ws.websocket_response import (
     EventDataRapidWind,
+    RapidWindWS,
     WebsocketObservation,
 )
 
@@ -330,7 +330,7 @@ async def async_setup_entry(
         WeatherFlowCloudSensorREST(rest_coordinator, sensor_description, station_id)
         for station_id in rest_coordinator.data
         for sensor_description in WF_SENSORS
-    )
+    ]
 
     entities.extend(
         WeatherFlowWebsocketSensorWind(
@@ -365,11 +365,14 @@ async def async_setup_entry(
 class WeatherFlowSensorBase(WeatherFlowCloudEntity, SensorEntity, ABC):
     """Common base class."""
 
-    _attr_extra_state_attributes: dict[str, str]
-
     def __init__(
         self,
-        coordinator: Any,
+        coordinator: WeatherFlowCloudUpdateCoordinatorREST
+        | WeatherFlowCloudDataCallbackCoordinator[
+            EventDataRapidWind | WebsocketObservation,
+            RapidWindListenStartMessage | ListenStartMessage,
+            RapidWindWS | WebsocketObservation,
+        ],
         description: WeatherFlowCloudSensorEntityDescription
         | WeatherFlowCloudSensorEntityDescriptionWebsocketWind
         | WeatherFlowCloudSensorEntityDescriptionWebsocketObservation,
@@ -397,11 +400,18 @@ class WeatherFlowSensorBase(WeatherFlowCloudEntity, SensorEntity, ABC):
     @property
     def available(self) -> bool:
         """Get if available."""
+
+        if not super().available:
+            return False
+
         if self.device_id is not None:
+            # Websocket sensors - have Device IDs
             return bool(
                 self.coordinator.data
                 and self.coordinator.data[self.station_id][self.device_id] is not None
             )
+
+        # Check availability of a REST based sensor
         return bool(self.coordinator.data)
 
 
