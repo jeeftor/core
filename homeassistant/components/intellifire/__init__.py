@@ -136,6 +136,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: IntellifireConfigEntry) 
             "Initialization of fireplace timed out after 10 minutes"
         ) from err
 
+    # Check connectivity and apply fallback if needed
+    await _async_validate_and_set_modes(fireplace, entry)
+
     # Construct coordinator
     data_update_coordinator = IntellifireDataUpdateCoordinator(hass, entry, fireplace)
 
@@ -151,36 +154,65 @@ async def async_setup_entry(hass: HomeAssistant, entry: IntellifireConfigEntry) 
     return True
 
 
+async def _async_validate_and_set_modes(
+    fireplace: UnifiedFireplace, entry: IntellifireConfigEntry
+) -> None:
+    """Validate connectivity and fall back to available mode if preferred is unavailable."""
+    await fireplace.async_validate_connectivity()
+
+    local_available = fireplace.local_connectivity
+    cloud_available = fireplace.cloud_connectivity
+
+    # Get user's preferred modes
+    preferred_read = entry.options.get(CONF_READ_MODE, API_MODE_LOCAL)
+    preferred_control = entry.options.get(CONF_CONTROL_MODE, API_MODE_LOCAL)
+
+    # Determine actual read mode with fallback
+    if preferred_read == API_MODE_LOCAL:
+        if local_available:
+            read_mode = IntelliFireApiMode.LOCAL
+        elif cloud_available:
+            LOGGER.info("Local read unavailable, falling back to cloud")
+            read_mode = IntelliFireApiMode.CLOUD
+        else:
+            raise ConfigEntryNotReady("Neither local nor cloud connectivity available")
+    elif cloud_available:
+        read_mode = IntelliFireApiMode.CLOUD
+    elif local_available:
+        LOGGER.info("Cloud read unavailable, falling back to local")
+        read_mode = IntelliFireApiMode.LOCAL
+    else:
+        raise ConfigEntryNotReady("Neither local nor cloud connectivity available")
+
+    # Determine actual control mode with fallback
+    if preferred_control == API_MODE_LOCAL:
+        if local_available:
+            control_mode = IntelliFireApiMode.LOCAL
+        elif cloud_available:
+            LOGGER.info("Local control unavailable, falling back to cloud")
+            control_mode = IntelliFireApiMode.CLOUD
+        else:
+            raise ConfigEntryNotReady("Neither local nor cloud connectivity available")
+    elif cloud_available:
+        control_mode = IntelliFireApiMode.CLOUD
+    elif local_available:
+        LOGGER.info("Cloud control unavailable, falling back to local")
+        control_mode = IntelliFireApiMode.LOCAL
+    else:
+        raise ConfigEntryNotReady("Neither local nor cloud connectivity available")
+
+    # Apply the modes if different from what was set during construction
+    if read_mode != fireplace.read_mode:
+        await fireplace.set_read_mode(read_mode)
+    if control_mode != fireplace.control_mode:
+        await fireplace.set_control_mode(control_mode)
+
+
 async def async_update_options(
     hass: HomeAssistant, entry: IntellifireConfigEntry
 ) -> None:
-    """Handle options update."""
-    coordinator: IntellifireDataUpdateCoordinator = entry.runtime_data
-
-    new_read_mode = IntelliFireApiMode(
-        entry.options.get(CONF_READ_MODE, API_MODE_LOCAL)
-    )
-    new_control_mode = IntelliFireApiMode(
-        entry.options.get(CONF_CONTROL_MODE, API_MODE_LOCAL)
-    )
-
-    fireplace = coordinator.fireplace
-    current_read_mode = fireplace.read_mode
-    current_control_mode = fireplace.control_mode
-
-    # Only update modes that actually changed
-    if new_read_mode != current_read_mode:
-        LOGGER.debug("Updating read mode: %s -> %s", current_read_mode, new_read_mode)
-        await fireplace.set_read_mode(new_read_mode)
-
-    if new_control_mode != current_control_mode:
-        LOGGER.debug(
-            "Updating control mode: %s -> %s", current_control_mode, new_control_mode
-        )
-        await fireplace.set_control_mode(new_control_mode)
-
-    # Refresh data with new mode settings
-    await coordinator.async_request_refresh()
+    """Handle options update by reloading the config entry."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def _async_wait_for_initialization(
